@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Route;
 
 
@@ -9,7 +10,7 @@ class Task
     public int $id,
     public string $title,
     public string $description,
-    public ?string $long_description,
+    public ?string $long_description,   // ? denotes optional
     public bool $completed,
     public string $created_at,
     public string $updated_at
@@ -56,14 +57,21 @@ $tasks = [
   ),
 ];
 
-Route::get('/', function () use ($tasks) {
+Route::get('/', function(){
+    return redirect()->route('tasks.index');
+});
+Route::get('/tasks', function () use ($tasks) {
     return view('index',[
        'tasks'=>$tasks
     ]);
 })->name('tasks.index');
 
-Route::get('/{id}', function () use ($tasks) {
-    return "One Single Task";
+Route::get('/tasks/{id}', function ($id) use ($tasks) {
+    $task = collect($tasks)->firstWhere('id',$id);
+    if(!$task) {
+        abort(Response::HTTP_NOT_FOUND);
+    }
+    return view('show',['task'=>$task]);
 })->name('tasks.show');
 
 Route::get('/hello', function () {  // url can be anything ex: xxx, while using hallo route it will redirect here
